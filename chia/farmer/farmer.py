@@ -12,6 +12,7 @@ from blspy import AugSchemeMPL, G1Element, G2Element, PrivateKey
 import chia.server.ws_connection as ws  # lgtm [py/import-and-import-from]
 from chia.consensus.coinbase import create_puzzlehash_for_pk
 from chia.consensus.constants import ConsensusConstants
+from chia.farmer.og_pooling.pool_worker import PoolWorker
 from chia.pools.pool_config import PoolWalletConfig, load_pool_config
 from chia.protocols import farmer_protocol, harvester_protocol
 from chia.protocols.pool_protocol import (
@@ -152,9 +153,12 @@ class Farmer:
 
         self.harvester_cache: Dict[str, Dict[str, HarvesterCacheEntry]] = {}
 
+        self.og_pooling: PoolWorker = PoolWorker(root_path, self)
+
     async def _start(self):
         self.update_pool_state_task = asyncio.create_task(self._periodically_update_pool_state_task())
         self.cache_clear_task = asyncio.create_task(self._periodically_clear_cache_and_refresh_task())
+        await self.og_pooling.start()
 
     def _close(self):
         self._shut_down = True
@@ -162,6 +166,7 @@ class Farmer:
     async def _await_closed(self):
         await self.cache_clear_task
         await self.update_pool_state_task
+        await self.og_pooling.close()
 
     def _set_state_changed_callback(self, callback: Callable):
         self.state_changed_callback = callback
@@ -483,6 +488,7 @@ class Farmer:
         if search_for_private_key:
             all_sks = self.keychain.get_all_private_keys()
             stop_searching_for_farmer, stop_searching_for_pool = False, False
+            pool_target = self.og_pooling.get_pool_target()
             for i in range(500):
                 if stop_searching_for_farmer and stop_searching_for_pool and i > 0:
                     break
@@ -491,17 +497,17 @@ class Farmer:
 
                     if ph == self.farmer_target:
                         stop_searching_for_farmer = True
-                    if ph == self.pool_target:
+                    if ph == pool_target:
                         stop_searching_for_pool = True
             return {
                 "farmer_target": self.farmer_target_encoded,
-                "pool_target": self.pool_target_encoded,
+                "pool_target": self.og_pooling.get_pool_target_encoded(),
                 "have_farmer_sk": stop_searching_for_farmer,
                 "have_pool_sk": stop_searching_for_pool,
             }
         return {
             "farmer_target": self.farmer_target_encoded,
-            "pool_target": self.pool_target_encoded,
+            "pool_target": self.og_pooling.get_pool_target_encoded(),
         }
 
     def set_reward_targets(self, farmer_target_encoded: Optional[str], pool_target_encoded: Optional[str]):
