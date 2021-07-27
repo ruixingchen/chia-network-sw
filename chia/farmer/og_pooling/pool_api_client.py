@@ -22,11 +22,8 @@ class PoolApiClient:
 
     async def submit_partial(self, submit_partial: SubmitPartialOG):
         async with ClientSession(timeout=timeout) as client:
-            headers = {"content-type": "application/json;", }
-            body = submit_partial.to_json_dict()
             async with client.post(f"{self.base_url}/og/partial",
-                                   json=body,
-                                   headers=headers,
+                                   json=submit_partial.to_json_dict(),
                                    ssl=ssl_context_for_root(get_mozilla_ca_crt()),
                                    ) as res:
                 return await res.json()
