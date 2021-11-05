@@ -85,7 +85,7 @@ class PoolWorker:
         pool_info: Dict = {}
         has_pool_info = False
 
-        client = PoolApiClient(self.pool_url)
+        client = PoolApiClient(self.pool_url, self.farmer.log)
         self.log.info(f"Connecting to pool {client.base_url}")
         while not self._shut_down and not has_pool_info:
             try:
@@ -248,17 +248,17 @@ class PoolWorker:
         agg_sig: G2Element = AugSchemeMPL.aggregate([plot_signature, authentication_signature])
 
         submit_partial = SubmitPartialOG(payload, agg_sig)
-        self.log.debug("Submitting partial ..")
+        self.log.info(f"Submitting partial to pool {self.pool_url}")
         self.last_partial_submit_time = time.time()
 
         submit_response: Dict
         try:
             submit_response = await self.pool_client.submit_partial(submit_partial)
         except Exception as e:
-            self.log.error(f"Error submitting partial to pool: {e}")
+            self.log.error(f"Error submitting partial to pool {self.pool_url}: {e}")
             return
 
-        self.log.debug(f"Pool response: {submit_response}")
+        self.log.info(f"Pool response: {submit_response}")
         if "new_difficulty" in submit_response:
             new_difficulty = submit_response["new_difficulty"]
             if new_difficulty != self.pool_difficulty:
@@ -273,7 +273,7 @@ class PoolWorker:
 
         if "error_code" in submit_response:
             if submit_response["error_code"] == 5:
-                self.log.info(f"Partial difficulty too low")
+                self.log.warning(f"Partial difficulty too low")
             else:
                 self.farmer.log.error(
                     f"Error in pooling: {submit_response['error_code']}, "

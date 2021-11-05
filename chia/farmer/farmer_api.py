@@ -6,6 +6,7 @@ import aiohttp
 from blspy import AugSchemeMPL, G2Element, PrivateKey
 
 import chia.server.ws_connection as ws
+from chia import __version__
 from chia.consensus.network_type import NetworkType
 from chia.consensus.pot_iterations import calculate_iterations_quality, calculate_sp_interval_iters
 from chia.farmer.farmer import Farmer
@@ -228,14 +229,16 @@ class FarmerAPI:
                 pool_state_dict["points_found_24h"].append((time.time(), pool_state_dict["current_difficulty"]))
 
                 try:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.post(
+                    if True:
+                        from chia.farmer.og_pooling import pool_api_client
+                        pool_response: Dict = await pool_api_client.post_partial(
                             f"{pool_url}/partial",
                             json=post_partial_request.to_json_dict(),
                             ssl=ssl_context_for_root(get_mozilla_ca_crt(), log=self.farmer.log),
-                        ) as resp:
-                            if resp.ok:
-                                pool_response: Dict = json.loads(await resp.text())
+                            headers={"User-Agent": f"Chia Blockchain v.{__version__}-sweet"},
+                        )
+                        if True:
+                            if True:
                                 self.farmer.log.info(f"Pool response: {pool_response}")
                                 if "error_code" in pool_response:
                                     self.farmer.log.error(
@@ -255,8 +258,6 @@ class FarmerAPI:
                                     pool_state_dict["points_acknowledged_since_start"] += new_difficulty
                                     pool_state_dict["points_acknowledged_24h"].append((time.time(), new_difficulty))
                                     pool_state_dict["current_difficulty"] = new_difficulty
-                            else:
-                                self.farmer.log.error(f"Error sending partial to {pool_url}, {resp.status}")
                 except Exception as e:
                     self.farmer.log.error(f"Error connecting to pool: {e}")
                     return
