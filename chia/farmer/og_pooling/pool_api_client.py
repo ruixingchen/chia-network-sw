@@ -54,5 +54,5 @@ class PoolApiClient:
         return await post_partial(f"{self.base_url}/og/partial",
                                   json=submit_partial.to_json_dict(),
                                   ssl=ssl_context_for_root(get_mozilla_ca_crt(), log=self.log),
-                                  headers={"User-Agent": f"Chia Blockchain v.{__version__}-sweet"},
+                                  headers={"User-Agent": f"Chia Blockchain v.{__version__}"},
                                   )
