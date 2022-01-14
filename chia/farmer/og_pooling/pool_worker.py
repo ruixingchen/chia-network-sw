@@ -214,7 +214,8 @@ class PoolWorker:
             new_proof_of_space.sp_hash,
             is_eos,
             uint32(self.total_plots),
-            payout_address
+            payout_address,
+            peer.peer_node_id,
         )
 
         # The plot key is 2/2 so we need the harvester's half of the signature

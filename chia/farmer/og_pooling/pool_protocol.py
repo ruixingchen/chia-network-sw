@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from blspy import G2Element
 
@@ -18,6 +19,7 @@ class PartialPayloadOG(Streamable):
     end_of_sub_slot: bool
     total_plots: uint32  # Total number of plots on this farmer
     payout_address: str  # The farmer can choose where to send the rewards
+    harvester_id: Optional[bytes32]
 
 
 @dataclass(frozen=True)
