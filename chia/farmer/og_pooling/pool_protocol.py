@@ -9,8 +9,8 @@ from chia.util.ints import uint64, uint32
 from chia.util.streamable import streamable, Streamable
 
 
-@dataclass(frozen=True)
 @streamable
+@dataclass(frozen=True)
 class PartialPayloadOG(Streamable):
     id: str
     difficulty: uint64
@@ -22,8 +22,8 @@ class PartialPayloadOG(Streamable):
     harvester_id: Optional[bytes32]
 
 
-@dataclass(frozen=True)
 @streamable
+@dataclass(frozen=True)
 class SubmitPartialOG(Streamable):
     payload: PartialPayloadOG
     aggregate_signature: G2Element  # Sig of partial by plot key and pool key
