@@ -53,7 +53,7 @@ class PoolWorker:
         self.pool_url = og_config.get("pool_url", DEFAULT_POOL_URL)
         self.pool_payout_address: str = str(og_config.get("pool_payout_address", "")).strip()
 
-        self.pool_target: Optional[bytes] = None
+        self.pool_target: Optional[bytes32] = None
         self.pool_target_encoded: Optional[str] = None
 
         self.pool_sub_slot_iters = POOL_SUB_SLOT_ITERS
@@ -104,8 +104,7 @@ class PoolWorker:
         self.pool_difficulty = self.pool_minimum_difficulty
         self.pool_partial_target_time = pool_info["partial_target_time"]
 
-        self.pool_target = hexstr_to_bytes(pool_info["target_puzzle_hash"])
-        assert len(self.pool_target) == 32
+        self.pool_target = bytes32.from_hexstr(pool_info["target_puzzle_hash"])
         address_prefix = self.config["network_overrides"]["config"][self.config["selected_network"]]["address_prefix"]
         self.pool_target_encoded = encode_puzzle_hash(self.pool_target, address_prefix)
 
@@ -169,7 +168,7 @@ class PoolWorker:
         if self._is_pool_connected:
             self.harvester_plots[peer.peer_node_id] = request.total_plots
 
-    def get_pool_target(self) -> bytes:
+    def get_pool_target(self) -> bytes32:
         if self._is_pool_connected:
             return self.pool_target
         else:
