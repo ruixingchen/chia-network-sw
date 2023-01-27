@@ -10,7 +10,7 @@ from chia.consensus.pot_iterations import calculate_sp_interval_iters, calculate
 from chia.farmer.og_pooling.pool_api_client import PoolApiClient
 from chia.farmer.og_pooling.pool_protocol import PartialPayloadOG, SubmitPartialOG
 from chia.protocols import farmer_protocol, harvester_protocol
-from chia.types.blockchain_format.proof_of_space import ProofOfSpace
+from chia.types.blockchain_format.proof_of_space import ProofOfSpace, generate_plot_public_key
 from chia.types.blockchain_format.sized_bytes import bytes32
 from chia.util.bech32m import encode_puzzle_hash
 from chia.util.byte_types import hexstr_to_bytes
@@ -236,7 +236,7 @@ class PoolWorker:
         for sk in self.farmer.get_private_keys():
             pk = sk.get_g1()
             if pk == sign_response.farmer_pk:
-                agg_pk = ProofOfSpace.generate_plot_public_key(sign_response.local_pk, pk)
+                agg_pk = generate_plot_public_key(sign_response.local_pk, pk)
                 assert agg_pk == new_proof_of_space.proof.plot_public_key
                 sig_farmer = AugSchemeMPL.sign(sk, m_to_sign, agg_pk)
                 plot_signature = AugSchemeMPL.aggregate([sig_farmer, sign_response.message_signatures[0][1]])
