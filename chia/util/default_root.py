@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import sys
+import json
 
 DEFAULT_ROOT_PATH = Path(os.path.expanduser(os.getenv("CHIA_ROOT", "~/.chia/mainnet"))).resolve()
 
 DEFAULT_KEYS_ROOT_PATH = Path(os.path.expanduser(os.getenv("CHIA_KEYS_ROOT", "~/.chia_keys"))).resolve()
 
-bin_path = Path(os.path[0])
+bin_path = Path(sys.path[0])
 print(f"获取到当前启动路径： {bin_path}")
 config_file = bin_path/"config_root.json"
 if config_file.exists():
